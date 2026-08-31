@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1720" />
+  <meta name="description" content="Phone-friendly Galveston fishing dashboard for tides, weather and on-water decisions." />
+  <title>Galveston Fishing Dashboard</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">TIDEWATER 272 CC</p>
+      <h1>Galveston Fishing Dashboard</h1>
+      <p class="muted">Tide + wind + water clarity → fishing call</p>
+    </div>
+    <button id="refreshBtn" class="primary">Refresh Live Data</button>
+  </header>
+
+  <main>
+    <section class="status-row">
+      <span id="liveStatus" class="status-pill">Loading live data…</span>
+      <span id="lastUpdated" class="muted small"></span>
+    </section>
+
+    <section class="grid two">
+      <article class="card">
+        <div class="card-heading">
+          <h2>Tide</h2>
+          <span class="badge">NOAA</span>
+        </div>
+        <div id="tideState" class="hero-value">—</div>
+        <p id="nextTide" class="muted">Loading Pier 21 tide predictions…</p>
+        <div id="tideEvents" class="mini-list"></div>
+      </article>
+
+      <article class="card">
+        <div class="card-heading">
+          <h2>Wind & Forecast</h2>
+          <span class="badge">NWS</span>
+        </div>
+        <div id="windNow" class="hero-value">—</div>
+        <p id="weatherNow" class="muted">Loading Galveston forecast…</p>
+        <div id="forecastStrip" class="forecast-strip"></div>
+      </article>
+    </section>
+
+    <section class="card call-card">
+      <div class="card-heading">
+        <h2>What I Would Do</h2>
+        <span id="callGrade" class="badge">WAITING</span>
+      </div>
+
+      <div class="controls">
+        <label>
+          Water clarity
+          <select id="claritySelect">
+            <option value="green">Green / Clean</option>
+            <option value="stained" selected>Stained / Fishable</option>
+            <option value="muddy">Muddy / Chocolate</option>
+          </select>
+        </label>
+
+        <label>
+          Time window
+          <select id="timeSelect">
+            <option value="pre">Pre-sunrise</option>
+            <option value="morning" selected>Morning</option>
+            <option value="midday">Midday</option>
+            <option value="evening">Evening</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="recommendation-grid">
+        <div>
+          <span class="label">Primary zone</span>
+          <strong id="zoneCall">—</strong>
+        </div>
+        <div>
+          <span class="label">Presentation</span>
+          <strong id="presentationCall">—</strong>
+        </div>
+        <div>
+          <span class="label">Boat position</span>
+          <strong id="boatCall">—</strong>
+        </div>
+        <div>
+          <span class="label">Garmin / sonar</span>
+          <strong id="sonarCall">—</strong>
+        </div>
+      </div>
+
+      <div id="reasoning" class="reason-box">Live data is loading.</div>
+    </section>
+
+    <section class="grid two">
+      <article class="card">
+        <h2>On-Water Sequence</h2>
+        <ol class="compact-list">
+          <li><strong>Safety first.</strong> Forecast, lightning, visibility, fuel, PFDs, kill switch, VHF/phone.</li>
+          <li><strong>Read water.</strong> Wind → tide/current → clarity → bait → structure.</li>
+          <li><strong>Find life.</strong> Mullet, shrimp, birds, slicks, seams, sonar bait.</li>
+          <li><strong>Controlled drift.</strong> Upwind/upcurrent; shut the 250s down early.</li>
+          <li><strong>Mark every bite.</strong> Save depth/edge/waypoint and repeat the drift.</li>
+          <li><strong>Move rule.</strong> No bait/bites/signs in ~15–20 minutes = move.</li>
+        </ol>
+      </article>
+
+      <article class="card">
+        <h2>Boat Quick Reference</h2>
+        <div class="spec-grid">
+          <span>Boat</span><strong>Tidewater 272 CC</strong>
+          <span>Engines</span><strong>Twin Yamaha 250s</strong>
+          <span>Fuel</span><strong>178 gal</strong>
+          <span>~3500 RPM</span><strong>~3 mpg observed</strong>
+          <span>~4500 RPM</span><strong>~2 mpg observed</strong>
+        </div>
+
+        <div class="fuel-box">
+          <h3>Rough Trip Fuel Estimate</h3>
+          <label>
+            Planned round-trip miles
+            <input id="tripMiles" type="number" inputmode="decimal" min="0" step="1" value="40" />
+          </label>
+          <label>
+            Cruise estimate
+            <select id="mpgSelect">
+              <option value="3">~3 mpg @ 3500 RPM</option>
+              <option value="2">~2 mpg @ 4500 RPM</option>
+            </select>
+          </label>
+          <p><strong id="fuelEstimate">—</strong></p>
+          <p class="muted small">Planning estimate only. Verify actual fuel burn/range on the Yamaha/Garmin gauges and keep an appropriate reserve.</p>
+        </div>
+      </article>
+    </section>
+
+    <section class="card">
+      <div class="card-heading">
+        <h2>Quick Trip Log</h2>
+        <button id="clearLogBtn" class="ghost">Clear</button>
+      </div>
+      <div class="controls">
+        <label>
+          Spot / zone
+          <input id="logSpot" placeholder="e.g. Mid-bay shell" />
+        </label>
+        <label>
+          Result
+          <input id="logResult" placeholder="e.g. 3 trout, 6 ft shell edge" />
+        </label>
+      </div>
+      <label>
+        Notes
+        <textarea id="logNotes" rows="3" placeholder="Tide, lure, depth, bait, waypoint notes…"></textarea>
+      </label>
+      <button id="saveLogBtn" class="primary wide">Save Trip Note</button>
+      <div id="tripLog" class="trip-log"></div>
+    </section>
+
+    <section class="card warning">
+      <h2>Safety & Regulations</h2>
+      <p>This dashboard is a planning aid, not a navigation or safety system. Always verify the current marine forecast, lightning, sea state, navigation hazards, fuel, and current Texas fishing regulations before leaving the dock.</p>
+      <div class="link-row">
+        <a href="https://www.weather.gov/hgx/" target="_blank" rel="noreferrer">NWS Houston/Galveston</a>
+        <a href="https://tidesandcurrents.noaa.gov/stationhome.html?id=8771450" target="_blank" rel="noreferrer">NOAA Pier 21</a>
+        <a href="https://tpwd.texas.gov/regulations/outdoor-annual/fishing/" target="_blank" rel="noreferrer">TPWD Fishing Regulations</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Built for fast phone use on the water. NOAA station 8771450 • Galveston Pier 21.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
