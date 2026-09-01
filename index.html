@@ -23,6 +23,19 @@
     </div>
 
     <div class="header-actions">
+      <label class="species-control">
+        Target Species
+        <select id="speciesSelect" aria-label="Target species">
+          <option value="trout">Speckled Trout</option>
+          <option value="redfish">Redfish</option>
+          <option value="flounder">Southern Flounder</option>
+          <option value="sheepshead">Sheepshead</option>
+          <option value="blackdrum">Black Drum</option>
+          <option value="spanish">Spanish Mackerel</option>
+          <option value="general">General Inshore</option>
+        </select>
+      </label>
+
       <label class="theme-control">
         Display
         <select id="themeSelect" aria-label="Display theme">
@@ -31,6 +44,7 @@
           <option value="night">Night: Dark Marine</option>
         </select>
       </label>
+
       <button id="refreshBtn" class="primary">Refresh Live Data</button>
     </div>
   </header>
@@ -103,6 +117,42 @@
       </div>
     </section>
 
+
+    <section class="card species-card">
+      <div class="card-heading">
+        <div>
+          <p class="eyebrow accent-text">NEW IN V4</p>
+          <h2><span id="speciesTitle">Speckled Trout</span> Game Plan</h2>
+        </div>
+        <span id="speciesBadge" class="badge tone-water">TARGET</span>
+      </div>
+
+      <div class="species-plan-grid">
+        <div>
+          <span class="label">Natural / live bait</span>
+          <strong id="speciesBait">—</strong>
+        </div>
+        <div>
+          <span class="label">Artificial</span>
+          <strong id="speciesArtificial">—</strong>
+        </div>
+        <div>
+          <span class="label">Rig / presentation</span>
+          <strong id="speciesRig">—</strong>
+        </div>
+        <div>
+          <span class="label">Key structure</span>
+          <strong id="speciesStructure">—</strong>
+        </div>
+      </div>
+
+      <div id="speciesTip" class="species-tip">—</div>
+
+      <div class="link-row species-links">
+        <a id="speciesRegLink" href="https://tpwd.texas.gov/regulations/outdoor-annual/fishing/" target="_blank" rel="noreferrer">Verify current TPWD regulations</a>
+      </div>
+    </section>
+
     <section class="card call-card">
       <div class="card-heading">
         <div>
@@ -165,7 +215,7 @@
       </div>
 
       <p class="muted">
-        Colored preset pins are broad strategy areas only. Your saved pins can be exact Garmin/GPS waypoints.
+        Preset pins now change with the selected target species. Your saved pins can be exact Garmin/GPS waypoints and can be tagged by species.
         Never use a preset pin as a navigation route or safe approach line.
       </p>
 
@@ -191,6 +241,14 @@
           <label>
             Name
             <input id="wpName" placeholder="e.g. Dad's reef edge" />
+          </label>
+
+          <label>
+            Species
+            <select id="wpSpecies">
+              <option value="current">Current target species</option>
+              <option value="all">All species</option>
+            </select>
           </label>
 
           <label>

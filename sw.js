@@ -1,4 +1,4 @@
-const CACHE = "galveston-fishing-v3";
+const CACHE = "galveston-fishing-v4";
 const ASSETS = [
   "./",
   "./index.html",

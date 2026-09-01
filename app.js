@@ -4,58 +4,191 @@ const GALVESTON = {
   tideStation: "8771450"
 };
 
-const STRATEGY_ZONES = [
-  {
-    key: "east-bay",
-    name: "East Bay Shell / Reef Country",
-    lat: 29.49,
-    lon: -94.67,
-    tone: "water",
-    tags: ["reef", "shell", "incoming", "midbay"],
-    summary: "Broad shell/reef search area. Look for bait, harder bottom and repeatable contour changes.",
-    tactic: "Controlled drift across productive contour; mark every bite and repeat outside the school."
+const SPECIES_PROFILES = {
+  trout: {
+    name: "Speckled Trout",
+    shortName: "Trout",
+    bait: "Live shrimp; croaker; finger mullet / pinfish",
+    artificial: "Soft plastics, topwaters, spoons, suspending plugs",
+    rig: "Popping cork + shrimp; free-shrimp drift; 1/8–1/4 oz jighead",
+    structure: "Oyster/shell reefs, grass edges, marsh edges, channels, bird schools",
+    tip: "Warm weather: shallow early/late, then slide toward deeper drop-offs, channels or reef edges as the day heats up.",
+    regs: "https://tpwd.texas.gov/regulations/outdoor-annual/fishing/saltwater-fishing/bag-length-limits/seatrout-bag-length-limits",
+    scoring: "dawn_tide",
+    zones: [
+      {key:"east-bay", name:"East Bay Shell / Reef Country", lat:29.49, lon:-94.67, tone:"water",
+       summary:"Broad shell/reef search area for bait, harder bottom and repeatable contour changes.",
+       tactic:"Controlled drift across productive shell; mark bite depth and repeat outside the school."},
+      {key:"jetties", name:"Galveston Jetties / Bay Entrance", lat:29.35, lon:-94.71, tone:"amber",
+       summary:"Gulf-water exchange, current seams and bait movement when conditions allow.",
+       tactic:"Fish the seam from safe water; keep ship traffic and rock clearance primary."},
+      {key:"lower-bay", name:"Lower Bay / Texas City Side", lat:29.38, lon:-94.86, tone:"green",
+       summary:"Broad reef/structure option when wind and current set up a manageable drift.",
+       tactic:"Scan shell/structure first, then set repeatable wind-driven passes."},
+      {key:"west-bay", name:"West Bay Reefs / Shorelines", lat:29.20, lon:-95.02, tone:"green",
+       summary:"Reefs, shorelines and drains can all produce when bait and moving water intersect.",
+       tactic:"Match the drift to the tide and keep the big engines away from shallow fish."},
+      {key:"beachfront", name:"Galveston Beachfront / Surf", lat:29.25, lon:-94.82, tone:"water",
+       summary:"Clean-water option in manageable wind/swell, especially around dawn.",
+       tactic:"Work guts/bars parallel to shore from safe water; follow bait movement."}
+    ]
   },
-  {
-    key: "jetties",
-    name: "Galveston Jetties / Bay Entrance",
-    lat: 29.35,
-    lon: -94.71,
-    tone: "amber",
-    tags: ["pass", "entrance", "incoming", "current", "jetty"],
-    summary: "Strong current influence and Gulf-water exchange. Sea state and ship traffic matter.",
-    tactic: "Work current seams from a safe holding position; never let position-hold replace seamanship."
+
+  redfish: {
+    name: "Redfish",
+    shortName: "Reds",
+    bait: "Live shrimp; finger mullet; croaker; small blue crab; cut mullet for larger fish",
+    artificial: "Gold/silver spoons, shrimp-style plastics, paddletails, shallow plugs",
+    rig: "Popping cork in shallows; free-lined shrimp; slip-sinker/bottom rig for baitfish or crab",
+    structure: "Shallow bay edges, oyster reefs, marsh drains, points, guts, jetties and pilings",
+    tip: "Think edges and bottom food. On outgoing water, drains become especially interesting; on incoming water, work flooded shoreline/reef edges.",
+    regs: "https://tpwd.texas.gov/regulations/outdoor-annual/fishing/saltwater-fishing/bag-length-limits/drum-bag-length-limits/",
+    scoring: "tide_edges",
+    zones: [
+      {key:"west-marsh", name:"West Bay Marsh / Drain Country", lat:29.19, lon:-95.07, tone:"green",
+       summary:"Broad shallow-edge and drain strategy area for reds moving with bait.",
+       tactic:"Outgoing: sit outside drain mouths. Incoming: work flooded edges and points."},
+      {key:"east-reef", name:"East Bay Oyster / Shoreline Edges", lat:29.50, lon:-94.67, tone:"water",
+       summary:"Oyster and shoreline breaks provide bottom forage and ambush edges.",
+       tactic:"Keep the boat on the deeper side and cast across shell/shoreline transitions."},
+      {key:"jetties-red", name:"Jetties / Pass — Bull Red Option", lat:29.34, lon:-94.70, tone:"amber",
+       summary:"Pass/current habitat can hold larger red drum; this is the exposed-water option.",
+       tactic:"Natural bait near bottom where legal/safe; prioritize current, traffic and sea-state safety."},
+      {key:"lower-red", name:"Lower Bay Points / Structure", lat:29.36, lon:-94.88, tone:"green",
+       summary:"Broad structure/point option when wind makes the far-open bay less attractive.",
+       tactic:"Search shoreline breaks, shell and current edges rather than featureless water."}
+    ]
   },
-  {
-    key: "lower-bay",
-    name: "Lower Bay / Texas City Side",
-    lat: 29.38,
-    lon: -94.86,
-    tone: "green",
-    tags: ["protected", "structure", "wind", "lowerbay"],
-    summary: "Useful broad option when structure, current and a more manageable lee line up.",
-    tactic: "Use wind to make short repeatable drifts and scan structure before committing."
+
+  flounder: {
+    name: "Southern Flounder",
+    shortName: "Flounder",
+    bait: "Mud minnows / killifish; live shrimp; small baitfish",
+    artificial: "Soft-plastic jigs worked slowly along bottom; shallow spoons around vegetation",
+    rig: "Bottom-oriented jig or Carolina/slip-style bait rig; slow presentation",
+    structure: "Channel edges, passes, jetties, oyster reefs, bayou/slough mouths and muddy back-bay edges",
+    tip: "Flounder are ambush fish. Slow down, stay close to bottom, and concentrate on chokepoints rather than covering huge featureless flats.",
+    regs: "https://tpwd.texas.gov/regulations/outdoor-annual/fishing/saltwater-fishing/bag-length-limits/flounder-bag-length-limits",
+    scoring: "bottom_current",
+    zones: [
+      {key:"flounder-pass", name:"Galveston Pass / Channel Edges", lat:29.34, lon:-94.72, tone:"amber",
+       summary:"Broad migration/current chokepoint around bay-to-Gulf connections.",
+       tactic:"Work bottom transitions and current breaks without obstructing navigation."},
+      {key:"west-drains", name:"West Bay Bayou / Drain Mouths", lat:29.20, lon:-95.03, tone:"green",
+       summary:"Muddy back-bay edges, drains and slough mouths fit flounder ambush behavior.",
+       tactic:"Slow bait or jig across the mouth and along the first depth change."},
+      {key:"lower-channel", name:"Lower Bay Channel / Reef Edges", lat:29.37, lon:-94.87, tone:"water",
+       summary:"Channel edges and oyster/structure transitions concentrate bottom-oriented ambush water.",
+       tactic:"Graph the break, then work it slowly rather than drifting too fast."},
+      {key:"jetty-flounder", name:"Jetty / Rock Transition", lat:29.33, lon:-94.71, tone:"amber",
+       summary:"Rock-to-bottom transitions can funnel prey and hold flounder.",
+       tactic:"Fish the softer edge next to hard structure while maintaining safe rock clearance."}
+    ]
   },
-  {
-    key: "west-bay",
-    name: "West Bay / Drains & Shorelines",
-    lat: 29.20,
-    lon: -95.02,
-    tone: "green",
-    tags: ["drain", "outgoing", "shoreline", "protected"],
-    summary: "Broad drain/shoreline strategy area, especially when bait is being pulled from backwater.",
-    tactic: "Sit outside the current tongue; cast upcurrent so the lure or bait exits naturally."
+
+  sheepshead: {
+    name: "Sheepshead",
+    shortName: "Sheepshead",
+    bait: "Fiddler crabs; small crabs; shrimp; other shellfish-style natural baits",
+    artificial: "Small crab/shrimp imitations where practical; natural bait is usually the simpler starting point",
+    rig: "Small strong hook, minimal weight needed to stay tight to structure",
+    structure: "Jetties, rock piles, reefs, bridge/pier pilings and barnacle-covered hard structure",
+    tip: "This is a structure game. Get the bait very close to hard substrate, keep contact, and be ready for subtle bites before the fish steals the bait.",
+    regs: "https://tpwd.texas.gov/regulations/outdoor-annual/fishing/saltwater-fishing/bag-length-limits/sheepshead-bag-length-limits",
+    scoring: "hard_structure",
+    zones: [
+      {key:"sheep-jetties", name:"Galveston Jetties", lat:29.34, lon:-94.70, tone:"amber",
+       summary:"Classic hard-structure habitat with rocks, barnacles and current.",
+       tactic:"Fish tight to structure from a safe boat position; current determines weight."},
+      {key:"sheep-dike", name:"Texas City Dike / Hard Structure", lat:29.38, lon:-94.89, tone:"green",
+       summary:"Broad hard-structure strategy area with pilings/rock-style habitat nearby.",
+       tactic:"Probe structure vertically or with short controlled casts; avoid snag-heavy overcasting."},
+      {key:"sheep-lower", name:"Lower Bay Pilings / Reef Structure", lat:29.35, lon:-94.85, tone:"water",
+       summary:"Look for barnacle-covered pilings, rock, shell and other hard substrate.",
+       tactic:"Use sonar/chart structure as confirmation, then fish physically tight to the target."}
+    ]
   },
-  {
-    key: "beachfront",
-    name: "Galveston Beachfront / Surf",
-    lat: 29.25,
-    lon: -94.82,
-    tone: "water",
-    tags: ["surf", "green", "calm", "incoming"],
-    summary: "A clean-water option only when wind, swell, visibility and breaker conditions allow.",
-    tactic: "Work guts/bars parallel to the beach; stay outside unsafe breakers and keep the bow controlled."
+
+  blackdrum: {
+    name: "Black Drum",
+    shortName: "Black Drum",
+    bait: "Shrimp; crab; squid; cut fish",
+    artificial: "Natural bait is the primary starting point; scent and bottom placement matter more than lure flash",
+    rig: "Bottom rig or light drop rig with enough weight to maintain bottom contact",
+    structure: "Channels, passes, reefs, jetties, pilings and bottom transitions",
+    tip: "Think smell, bottom and current. Put the bait where drum can find it and avoid moving too quickly when fish are holding on a bottom feature.",
+    regs: "https://tpwd.texas.gov/regulations/outdoor-annual/fishing/saltwater-fishing/bag-length-limits/drum-bag-length-limits/",
+    scoring: "bottom_current",
+    zones: [
+      {key:"drum-channel", name:"Lower Bay / Channel Structure", lat:29.37, lon:-94.86, tone:"water",
+       summary:"Channels and bottom transitions are practical places to search for drum.",
+       tactic:"Graph bottom changes and fish bait on or immediately beside the feature."},
+      {key:"drum-jetties", name:"Jetties / Pass Current", lat:29.34, lon:-94.70, tone:"amber",
+       summary:"Hard structure plus current and shellfish forage can suit black drum.",
+       tactic:"Use enough weight for bottom contact while keeping a safe current/rock position."},
+      {key:"drum-east", name:"East Bay Reef / Shell", lat:29.48, lon:-94.69, tone:"green",
+       summary:"Shell and bottom forage make reef country worth checking.",
+       tactic:"Fish the bottom on the edge rather than parking directly over the structure."}
+    ]
+  },
+
+  spanish: {
+    name: "Spanish Mackerel",
+    shortName: "Spanish",
+    bait: "Small live baitfish; shrimp can work when fish are mixed on bait",
+    artificial: "Fast flashy spoons, small metal jigs and baitfish-profile lures",
+    rig: "Cast/retrieve or troll flashy baitfish presentations; use bite-resistant leader only as needed",
+    structure: "Beachfront/nearshore bait, jetties, passes, channel entrances and surface-feeding schools",
+    tip: "This is a clean-water, bait-school search. Look for birds, nervous bait and fast-moving surface activity; keep presentations moving.",
+    regs: "https://tpwd.texas.gov/regulations/outdoor-annual/fishing/saltwater-fishing/bag-length-limits/mackerel-bag-length-limits",
+    scoring: "clean_bait",
+    zones: [
+      {key:"spanish-beach", name:"Beachfront / Nearshore Bait", lat:29.25, lon:-94.80, tone:"water",
+       summary:"Broad nearshore search area when water is clean and sea state is manageable.",
+       tactic:"Search for birds/bait and work parallel to moving schools without running through them."},
+      {key:"spanish-jetties", name:"Jetties / Gulf Side", lat:29.32, lon:-94.68, tone:"amber",
+       summary:"Pass current and bait concentration can attract mackerel.",
+       tactic:"Cast flashy lures through bait/current edges while maintaining safe clearance."},
+      {key:"spanish-entrance", name:"Bay Entrance / Channel Edge", lat:29.36, lon:-94.73, tone:"green",
+       summary:"Moving water around the entrance can collect bait and predators.",
+       tactic:"Watch for surface life first; use sonar only to help track the school after visual contact."}
+    ]
+  },
+
+  general: {
+    name: "General Inshore",
+    shortName: "Inshore",
+    bait: "Live shrimp is the best universal starting bait; finger mullet / baitfish are a strong second option",
+    artificial: "Soft plastics, spoons and small baitfish-profile lures",
+    rig: "Popping cork + shrimp or a simple jighead; adjust depth/weight to current",
+    structure: "Reefs, marsh drains, shoreline points, passes, jetties and bait schools",
+    tip: "When you do not care which species bites first, prioritize bait + structure + moving water and let the signs tell you what is feeding.",
+    regs: "https://tpwd.texas.gov/regulations/outdoor-annual/fishing/",
+    scoring: "general",
+    zones: [
+      {key:"general-east", name:"East Bay Reef Country", lat:29.49, lon:-94.67, tone:"water",
+       summary:"Shell/reef search water for mixed inshore species.",
+       tactic:"Find bait and hard bottom, then make controlled passes."},
+      {key:"general-west", name:"West Bay Drains / Shorelines", lat:29.20, lon:-95.02, tone:"green",
+       summary:"Drains and shoreline breaks can produce a mixed bag on moving water.",
+       tactic:"Match position to current direction and fish the edge, not dead water."},
+      {key:"general-jetties", name:"Galveston Jetties / Pass", lat:29.34, lon:-94.70, tone:"amber",
+       summary:"High-diversity structure/current option when sea state and traffic permit.",
+       tactic:"Let bait/current dictate the target depth while keeping safety first."},
+      {key:"general-lower", name:"Lower Bay Structure", lat:29.38, lon:-94.86, tone:"green",
+       summary:"A practical structure-focused area when conditions push you away from exposed water.",
+       tactic:"Use sonar to identify bottom changes and bait, then fish the most active edge."}
+    ]
   }
-];
+};
+
+function currentProfile() {
+  return SPECIES_PROFILES[state.selectedSpecies] || SPECIES_PROFILES.trout;
+}
+
+function currentZones() {
+  return currentProfile().zones;
+}
 
 const state = {
   tides: [],
@@ -69,7 +202,8 @@ const state = {
   map: null,
   zoneMarkers: new Map(),
   userMarkers: [],
-  themeMode: localStorage.getItem("galvestonThemeMode") || "auto"
+  themeMode: localStorage.getItem("galvestonThemeMode") || "auto",
+  selectedSpecies: localStorage.getItem("galvestonTargetSpecies") || "trout"
 };
 
 const $ = (id) => document.getElementById(id);
@@ -252,7 +386,7 @@ function applyTheme() {
 function refreshMarkerColors() {
   if (!state.map) return;
 
-  STRATEGY_ZONES.forEach(zone => {
+  currentZones().forEach(zone => {
     const marker = state.zoneMarkers.get(zone.key);
     if (!marker) return;
     marker.setStyle({
@@ -421,6 +555,53 @@ function renderAlerts() {
 }
 
 function chooseStrategyZone({ tide, clarity, wind, time }) {
+  const species = state.selectedSpecies;
+
+  if (wind !== null && wind >= 20) {
+    if (species === "spanish") return "spanish-entrance";
+    if (species === "redfish") return "lower-red";
+    if (species === "flounder") return "lower-channel";
+    if (species === "sheepshead") return "sheep-lower";
+    if (species === "blackdrum") return "drum-channel";
+    if (species === "general") return "general-lower";
+    return "lower-bay";
+  }
+
+  if (species === "redfish") {
+    if (tide === "Outgoing") return "west-marsh";
+    if (tide === "Incoming") return "east-reef";
+    return wind !== null && wind >= 15 ? "lower-red" : "west-marsh";
+  }
+
+  if (species === "flounder") {
+    if (tide === "Outgoing") return "west-drains";
+    if (tide === "Incoming") return "flounder-pass";
+    return "lower-channel";
+  }
+
+  if (species === "sheepshead") {
+    return wind !== null && wind >= 15 ? "sheep-lower" : "sheep-jetties";
+  }
+
+  if (species === "blackdrum") {
+    return tide === "Incoming" || tide === "Outgoing"
+      ? "drum-jetties"
+      : "drum-channel";
+  }
+
+  if (species === "spanish") {
+    if (clarity === "green" && (wind === null || wind <= 12)) return "spanish-beach";
+    return "spanish-entrance";
+  }
+
+  if (species === "general") {
+    if (wind !== null && wind >= 15) return "general-lower";
+    if (tide === "Outgoing") return "general-west";
+    if (tide === "Incoming") return "general-east";
+    return "general-jetties";
+  }
+
+  // Speckled trout default.
   if (wind !== null && wind >= 15) return "lower-bay";
 
   if (
@@ -455,143 +636,109 @@ function setGradeStyle(grade) {
   );
 }
 
+function updateSpeciesPlan() {
+  const profile = currentProfile();
+
+  $("speciesTitle").textContent = profile.name;
+  $("speciesBait").textContent = profile.bait;
+  $("speciesArtificial").textContent = profile.artificial;
+  $("speciesRig").textContent = profile.rig;
+  $("speciesStructure").textContent = profile.structure;
+  $("speciesTip").textContent = profile.tip;
+  $("speciesRegLink").href = profile.regs;
+
+  $("speciesBadge").textContent = profile.shortName.toUpperCase();
+}
+
 function buildFishingCall() {
   const clarity = $("claritySelect").value;
   const time = $("timeSelect").value;
   const tide = state.tideDirection;
   const wind = state.windMph;
+  const profile = currentProfile();
 
   let grade = "GO";
-  let zone = "Find bait + structure + moving water";
-  let presentation = "1/8 oz soft plastic; cork/shrimp as confidence bait";
-  let boat = "Approach quietly from upwind/upcurrent";
-  let sonar = "Scan bait/structure; mark bites and repeat";
+  let presentation = profile.rig;
+  let boat = "Approach quietly from upwind/upcurrent and keep the big engines off the fish.";
+  let sonar = "Use chart/SideVü to find structure or bait, then live/forward view to confirm fish position.";
   const reasons = [];
 
   if (wind !== null) {
     if (wind >= 20) {
       grade = "CAUTION";
-      zone = "Protected water only if conditions are otherwise safe";
-      boat = "Do not force an open-bay run";
-      reasons.push(
-        `Wind is around ${wind} mph: treat this as a potential no-go/open-water caution.`
-      );
+      boat = "Protected water only if conditions are otherwise safe; do not force exposed water.";
+      reasons.push(`Wind is around ${wind} mph: strong-wind penalty and potential open-water no-go.`);
     } else if (wind >= 15) {
       grade = "CONDITIONAL";
-      zone = "Protected shoreline / leeward bay";
-      presentation = "Cork or 1/8–1/4 oz plastic";
-      boat = "Short controlled drifts; minimize long exposed runs";
-      reasons.push(
-        `Wind is around ${wind} mph: favor protected water and shorter drifts.`
-      );
+      boat = "Favor protected structure and short controlled drifts.";
+      reasons.push(`Wind is around ${wind} mph: favor protected water.`);
     } else if (wind >= 5) {
-      reasons.push(
-        `Wind is around ${wind} mph: good range for repeatable controlled drifts.`
-      );
+      reasons.push(`Wind is around ${wind} mph: useful for controlled boat positioning.`);
     } else {
-      reasons.push(
-        `Wind is light at about ${wind} mph: stealth and long quiet approaches matter.`
-      );
+      reasons.push(`Wind is light at about ${wind} mph: stealth matters.`);
     }
   }
 
   if (tide === "Incoming") {
-    zone = clarity === "green"
-      ? "Passes / bay entrances / reef edges with Gulf-water influence"
-      : "Passes, shoreline points and structure swept by incoming current";
-
-    boat = "Set up upcurrent and let the incoming flow sweep the structure";
-    reasons.push(
-      "Incoming tide favors passes, entrances and cleaner Gulf-water influence."
-    );
+    reasons.push("Incoming tide is moving bait and water inward.");
   } else if (tide === "Outgoing") {
-    zone = "Marsh drains / bayou mouths / cuts / down-current reef edges";
-    boat = "Hold outside the drain/current seam, not in the flow";
-    reasons.push(
-      "Outgoing tide favors bait exiting drains and backwater."
-    );
+    reasons.push("Outgoing tide can concentrate bait around drains, cuts and down-current edges.");
   }
 
-  if (clarity === "green") {
-    if (wind !== null && wind <= 12) {
-      zone =
-        tide === "Outgoing"
-          ? zone
-          : "Surf / reefs / flats with bait and moving water";
-    }
-
-    presentation =
-      (time === "pre" || time === "morning")
-        ? "Topwater first; then natural 1/8 oz plastic"
-        : "Natural soft plastic; live shrimp/croaker where appropriate";
-
-    reasons.push(
-      "Green/clean water rewards natural colors, longer casts and a quiet approach."
-    );
-  } else if (clarity === "stained") {
-    presentation =
-      (time === "pre" || time === "morning")
-        ? "Topwater or 1/8 oz plastic; cork/shrimp"
-        : "Plastic or cork/shrimp; use visible contrast if needed";
-
-    reasons.push(
-      "Stained but fishable water is strong trout water around shell, drains and seams."
-    );
+  if (clarity === "muddy") {
+    reasons.push("Muddy/chocolate water: prioritize cleaner-water edges or species that rely less on sight.");
+  } else if (clarity === "green") {
+    reasons.push("Green/clean water supports longer visual range and natural presentations.");
   } else {
-    zone = "Find the nearest cleaner-water edge / current exchange";
-    presentation =
-      "Contrast plastic or popping cork; move quickly if water stays chocolate";
-
-    reasons.push(
-      "Muddy/chocolate water: prioritize finding cleaner water instead of grinding."
-    );
+    reasons.push("Stained/fishable water is a strong general inshore condition.");
   }
 
-  if (time === "pre") {
-    presentation =
-      clarity === "muddy"
-        ? presentation
-        : "Topwater first; then 1/8 oz plastic or live bait";
-
-    reasons.push(
-      "Pre-sunrise: start shallow/active and let topwater cover water."
-    );
-  } else if (time === "midday") {
-    if (wind === null || wind < 20) {
-      zone += " • favor deeper shell/channel structure after the early bite";
-    }
-
-    reasons.push(
-      "Midday in warm-season conditions: be ready to slide deeper."
-    );
+  // Species-specific current presentation / sonar guidance.
+  if (state.selectedSpecies === "redfish") {
+    presentation = tide === "Outgoing"
+      ? "Shrimp/finger mullet near drain mouths; spoon or paddletail along the edge"
+      : "Popping cork + shrimp or spoon/plastic across flooded shoreline and oyster edges";
+    sonar = "Use SideVü/chart to locate oyster/shoreline breaks; in very shallow water, visual bait/tailing signs beat sonar.";
+  } else if (state.selectedSpecies === "flounder") {
+    presentation = "Mud minnow or shrimp, or a soft-plastic jig worked slowly along bottom";
+    sonar = "Find the channel/reef/bottom transition first; flounder are an ambush-bottom target, so work the edge slowly.";
+    boat = "Hold off the edge and cast across the chokepoint; avoid drifting too fast over the target.";
+  } else if (state.selectedSpecies === "sheepshead") {
+    presentation = "Fiddler/small crab or shrimp tight to hard structure with minimal necessary weight";
+    sonar = "Use sonar/chart to identify pilings, rock and hard structure, then fish physically tight to it.";
+    boat = "Hold a safe casting/vertical-fishing distance from rocks or pilings; current dictates weight.";
+  } else if (state.selectedSpecies === "blackdrum") {
+    presentation = "Shrimp, crab, squid or cut bait on/near bottom";
+    sonar = "Graph bottom transitions and structure; focus on bottom contact rather than chasing suspended marks.";
+    boat = "Hold upcurrent of the bottom feature and let bait settle into the strike zone.";
+  } else if (state.selectedSpecies === "spanish") {
+    presentation = "Fast flashy spoon or small baitfish lure; follow visible bait schools";
+    sonar = "Birds and surface bait are primary; use forward sonar to follow school direction after locating activity.";
+    boat = "Approach from outside the school and intercept; never run the boat through feeding fish.";
+    if (clarity === "muddy") reasons.push("Spanish mackerel strongly favor a cleaner-water/bait-school search in this heuristic.");
+  } else if (state.selectedSpecies === "general") {
+    presentation = "Live shrimp under a cork or simple soft plastic; let bait signs decide the next adjustment";
+    sonar = "Find bait + structure first, then identify whether fish are shallow, suspended or bottom-oriented.";
+  } else {
+    // Trout
+    presentation = (time === "pre" || time === "morning")
+      ? "Topwater first; then 1/8 oz plastic or live shrimp/croaker"
+      : "Natural soft plastic or live bait; move deeper as heat builds";
+    sonar = "Use SideVü/chart for reef edges and live/forward sonar for bait/fish; mark exact bite depth.";
   }
 
-  if (zone.toLowerCase().includes("reef") || zone.toLowerCase().includes("shell")) {
-    sonar =
-      "Use SideVü/chart to find hard-bottom edge; forward/live view to confirm bait/fish; mark exact bite depth";
-  } else if (zone.toLowerCase().includes("drain")) {
-    sonar =
-      "Forward/perspective view on the drain mouth; mark the stage point and current tongue";
-  } else if (zone.toLowerCase().includes("surf")) {
-    sonar =
-      "Use live/forward sonar only where sea state is safe; follow bait along guts/bars";
-  }
-
-  state.recommendedZoneKey =
-    chooseStrategyZone({ tide, clarity, wind, time });
+  state.recommendedZoneKey = chooseStrategyZone({ tide, clarity, wind, time });
+  const chosenZone = currentZones().find(z => z.key === state.recommendedZoneKey);
 
   $("callGrade").textContent = grade;
   setGradeStyle(grade);
-  $("zoneCall").textContent = zone;
+  $("zoneCall").textContent = chosenZone?.name || "Find bait + structure + moving water";
   $("presentationCall").textContent = presentation;
   $("boatCall").textContent = boat;
   $("sonarCall").textContent = sonar;
+  $("reasoning").textContent = `${profile.name}: ${reasons.join(" ")}`;
 
-  $("reasoning").textContent =
-    reasons.length
-      ? reasons.join(" ")
-      : "Set water clarity and time window, then refresh the live tide and weather data.";
-
+  updateSpeciesPlan();
   updateRecommendedZone();
   buildOutlooks();
 }
@@ -626,6 +773,54 @@ function tideContextAt(date) {
       : null;
 
   return { direction, nearestMinutes, next };
+}
+
+function speciesScoreModifier({ date, wind, tide, clarity, sunTimes }) {
+  const profile = currentProfile();
+  let modifier = 0;
+
+  const fromSunrise = sunTimes.sunrise
+    ? (date.getTime() - sunTimes.sunrise.getTime()) / 3600000
+    : null;
+
+  const daylight =
+    sunTimes.sunrise && sunTimes.sunset
+      ? date >= sunTimes.sunrise && date <= sunTimes.sunset
+      : true;
+
+  switch (profile.scoring) {
+    case "dawn_tide":
+      if (fromSunrise !== null && fromSunrise >= -1 && fromSunrise <= 2.5) modifier += 5;
+      if (wind !== null && wind >= 5 && wind <= 12) modifier += 3;
+      break;
+
+    case "tide_edges":
+      if (tide.direction !== "Unknown") modifier += 5;
+      if (wind !== null && wind <= 15) modifier += 2;
+      break;
+
+    case "bottom_current":
+      if (tide.direction !== "Unknown") modifier += 5;
+      if (wind !== null && wind <= 15) modifier += 2;
+      break;
+
+    case "hard_structure":
+      if (tide.direction !== "Unknown") modifier += 4;
+      if (wind !== null && wind <= 15) modifier += 3;
+      break;
+
+    case "clean_bait":
+      if (clarity === "green") modifier += 8;
+      if (clarity === "muddy") modifier -= 10;
+      if (daylight) modifier += 5;
+      if (wind !== null && wind <= 12) modifier += 3;
+      break;
+
+    default:
+      break;
+  }
+
+  return modifier;
 }
 
 function hourFishingScore(period, clarity, sunTimes) {
@@ -730,6 +925,19 @@ function hourFishingScore(period, clarity, sunTimes) {
     score -= 10;
     reasons.push("active NWS alert");
   }
+
+  const speciesModifier = speciesScoreModifier({
+    date,
+    wind,
+    tide,
+    clarity,
+    sunTimes
+  });
+
+  score += speciesModifier;
+
+  if (speciesModifier > 0) reasons.push(`${currentProfile().shortName.toLowerCase()} habitat/timing boost`);
+  if (speciesModifier < 0) reasons.push(`${currentProfile().shortName.toLowerCase()} condition penalty`);
 
   score = Math.max(0, Math.min(100, Math.round(score)));
 
@@ -878,7 +1086,7 @@ function strategyForWindow(window, dayDate) {
     time
   });
 
-  return STRATEGY_ZONES.find(zone => zone.key === key)?.name || "Find bait + structure";
+  return currentZones().find(zone => zone.key === key)?.name || "Find bait + structure";
 }
 
 function buildOutlookModel(label, dayDate) {
@@ -1051,27 +1259,42 @@ function initMap() {
     }
   ).addTo(state.map);
 
-  STRATEGY_ZONES.forEach(zone => {
+  renderSpeciesMap();
+  renderUserWaypoints();
+}
+
+function clearSpeciesMarkers() {
+  state.zoneMarkers.forEach(marker => {
+    if (state.map) state.map.removeLayer(marker);
+  });
+  state.zoneMarkers.clear();
+}
+
+function renderSpeciesMap() {
+  if (!state.map || typeof L === "undefined") return;
+
+  clearSpeciesMarkers();
+
+  currentZones().forEach(zone => {
     const marker =
       makeCircleMarker(zone.lat, zone.lon, zone.tone, 8)
         .addTo(state.map)
         .bindPopup(`
           <strong>${escapeHtml(zone.name)}</strong>
           <p>${escapeHtml(zone.summary)}</p>
-          <small>Approximate strategy-zone center — not a navigation waypoint.</small>
+          <small>${escapeHtml(currentProfile().name)} strategy area — approximate, not a navigation waypoint.</small>
         `);
 
     marker.on("click", () => focusZone(zone.key));
-
     state.zoneMarkers.set(zone.key, marker);
   });
 
   renderZoneCards();
-  renderUserWaypoints();
+  updateRecommendedZone();
 }
 
 function renderZoneCards() {
-  $("zoneCards").innerHTML = STRATEGY_ZONES.map(zone => `
+  $("zoneCards").innerHTML = currentZones().map(zone => `
     <button
       class="zone-card ${zone.key === state.recommendedZoneKey ? "recommended" : ""}"
       data-zone-key="${escapeHtml(zone.key)}"
@@ -1079,40 +1302,26 @@ function renderZoneCards() {
     >
       <strong>${escapeHtml(zone.name)}</strong>
       <p>${escapeHtml(zone.summary)}</p>
-      <span class="zone-tag">
-        ${escapeHtml(
-          zone.tone === "amber"
-            ? "CURRENT"
-            : zone.tone === "green"
-            ? "STRUCTURE"
-            : "WATER"
-        )}
-      </span>
+      <span class="zone-tag">${escapeHtml(currentProfile().shortName.toUpperCase())}</span>
     </button>
   `).join("");
 
   document.querySelectorAll(".zone-card").forEach(card => {
-    card.addEventListener(
-      "click",
-      () => focusZone(card.dataset.zoneKey)
-    );
+    card.addEventListener("click", () => focusZone(card.dataset.zoneKey));
   });
 }
 
 function updateRecommendedZone() {
   renderZoneCards();
 
-  const zone =
-    STRATEGY_ZONES.find(z => z.key === state.recommendedZoneKey);
-
+  const zone = currentZones().find(z => z.key === state.recommendedZoneKey);
   if (!zone) return;
 
   $("recommendedZoneBanner").innerHTML =
-    `<strong>Best strategy-zone match right now:</strong> ${escapeHtml(zone.name)} — ${escapeHtml(zone.tactic)}`;
+    `<strong>${escapeHtml(currentProfile().name)} starting-area match:</strong> ${escapeHtml(zone.name)} — ${escapeHtml(zone.tactic)}`;
 
   state.zoneMarkers.forEach((marker, key) => {
     const selected = key === state.recommendedZoneKey;
-
     marker.setStyle({
       radius: selected ? 11 : 8,
       weight: selected ? 4 : 2,
@@ -1122,20 +1331,12 @@ function updateRecommendedZone() {
 }
 
 function focusZone(key) {
-  const zone =
-    STRATEGY_ZONES.find(z => z.key === key);
-
+  const zone = currentZones().find(z => z.key === key);
   if (!zone || !state.map) return;
 
-  state.map.flyTo(
-    [zone.lat, zone.lon],
-    11,
-    { duration: .7 }
-  );
+  state.map.flyTo([zone.lat, zone.lon], 11, { duration: .7 });
 
-  const marker =
-    state.zoneMarkers.get(key);
-
+  const marker = state.zoneMarkers.get(key);
   if (marker) marker.openPopup();
 }
 
@@ -1152,6 +1353,8 @@ function getWaypoints() {
 function saveWaypoint() {
   const name = $("wpName").value.trim();
   const type = $("wpType").value;
+  const speciesChoice = $("wpSpecies").value;
+  const species = speciesChoice === "current" ? state.selectedSpecies : speciesChoice;
   const lat = Number($("wpLat").value);
   const lon = Number($("wpLon").value);
   const notes = $("wpNotes").value.trim();
@@ -1175,6 +1378,7 @@ function saveWaypoint() {
     id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
     name,
     type,
+    species,
     lat,
     lon,
     notes,
@@ -1217,30 +1421,45 @@ function renderUserWaypoints() {
 
   state.userMarkers = [];
 
-  const waypoints = getWaypoints();
+  const allWaypoints = getWaypoints();
+
+  // Backward compatibility: V2/V3 waypoints had no species tag.
+  const waypoints = allWaypoints.filter(wp => {
+    const tag = wp.species || "all";
+    return tag === "all" || tag === state.selectedSpecies;
+  });
 
   $("waypointList").innerHTML =
     waypoints.length
-      ? waypoints.map(wp => `
-        <div class="waypoint-item">
-          <div>
-            <strong>${escapeHtml(wp.name)}</strong>
-            <div class="waypoint-meta">
-              <span>${escapeHtml(wp.type)}</span>
-              <span>${Number(wp.lat).toFixed(5)}, ${Number(wp.lon).toFixed(5)}</span>
+      ? waypoints.map(wp => {
+          const speciesKey = wp.species || "all";
+          const speciesName =
+            speciesKey === "all"
+              ? "All Species"
+              : (SPECIES_PROFILES[speciesKey]?.name || speciesKey);
+
+          return `
+            <div class="waypoint-item">
+              <div>
+                <strong>${escapeHtml(wp.name)}</strong>
+                <div class="waypoint-meta">
+                  <span class="waypoint-species-chip">${escapeHtml(speciesName)}</span>
+                  <span>${escapeHtml(wp.type)}</span>
+                  <span>${Number(wp.lat).toFixed(5)}, ${Number(wp.lon).toFixed(5)}</span>
+                </div>
+                ${wp.notes ? `<p class="muted small">${escapeHtml(wp.notes)}</p>` : ""}
+              </div>
+              <button
+                class="danger"
+                data-delete-wp="${escapeHtml(wp.id)}"
+                type="button"
+              >
+                Delete
+              </button>
             </div>
-            ${wp.notes ? `<p class="muted small">${escapeHtml(wp.notes)}</p>` : ""}
-          </div>
-          <button
-            class="danger"
-            data-delete-wp="${escapeHtml(wp.id)}"
-            type="button"
-          >
-            Delete
-          </button>
-        </div>
-      `).join("")
-      : `<p class="muted small">No personal waypoints saved on this device yet.</p>`;
+          `;
+        }).join("")
+      : `<p class="muted small">No personal waypoints saved for ${escapeHtml(currentProfile().name)} on this device yet.</p>`;
 
   document.querySelectorAll("[data-delete-wp]").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -1416,6 +1635,28 @@ $("useLocationBtn").addEventListener(
   useCurrentPosition
 );
 
+$("speciesSelect").value = state.selectedSpecies;
+
+$("speciesSelect").addEventListener(
+  "change",
+  event => {
+    state.selectedSpecies = event.target.value;
+
+    localStorage.setItem(
+      "galvestonTargetSpecies",
+      state.selectedSpecies
+    );
+
+    // New waypoints default to tagging the current target.
+    $("wpSpecies").value = "current";
+
+    buildFishingCall();
+    renderSpeciesMap();
+    renderUserWaypoints();
+    refreshMarkerColors();
+  }
+);
+
 $("themeSelect").value = state.themeMode;
 
 $("themeSelect").addEventListener(
@@ -1454,6 +1695,8 @@ if ("serviceWorker" in navigator) {
 
 loadLog();
 updateFuel();
+$("speciesSelect").value = state.selectedSpecies;
+updateSpeciesPlan();
 applyTheme();
 initMap();
 refreshLive();

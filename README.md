@@ -1,96 +1,96 @@
-# Galveston Fishing Dashboard — V3
+# Galveston Fishing Dashboard — V4
 
-V3 adds daylight readability and trip planning on top of V2.
+V4 changes the app from a speckled-trout-focused dashboard into a species-aware Galveston fishing planner.
 
-## Major V3 additions
+## Target Species
 
-### Automatic day/night display
-Choose:
-- Auto: Day / Night
-- Day: High Contrast
-- Night: Dark Marine
+The top of the dashboard now includes:
 
-Auto uses Galveston sunrise/sunset timing to switch the display. The daytime theme uses a bright,
-high-contrast marine palette intended to be easier to read outdoors. Your choice is saved in this browser.
+- Speckled Trout
+- Redfish
+- Southern Flounder
+- Sheepshead
+- Black Drum
+- Spanish Mackerel
+- General Inshore
 
-### Fishing Outlook
-The dashboard now creates:
-- Today
-- Tomorrow
-- Weekend
+Speckled Trout remains the default.
 
-Each card includes:
-- fishing-opportunity score from 0–100
-- best available 3-hour fishing window
-- projected wind
-- projected tide direction
-- sunrise and sunset
-- broad starting strategy zone
-- a few of the reasons affecting the score
+Changing the target species changes:
 
-Scores use NOAA tide predictions, the NWS hourly forecast, selected water clarity, time relative to
-sunrise/sunset, and simple forecast-language penalties.
+- natural/live bait guidance
+- artificial lure guidance
+- suggested rig / presentation
+- key structure
+- current "What I Would Do" recommendation
+- broad recommended fishing zones on the map
+- map pins
+- Fishing Outlook scoring adjustments
+- best starting strategy
+- personal waypoint filtering
 
-IMPORTANT: the score is NOT a boating-safety score.
+## Personal waypoints
 
-### NWS alert awareness
-The app checks active NWS alerts for the Galveston coordinate and surfaces an alert banner when one exists.
+New saved waypoints can be tagged as:
 
-### Existing V2 features retained
-- Live NOAA tide predictions
-- NWS hourly weather
-- current fishing recommendation engine
-- interactive strategy map
-- personal saved waypoints
-- phone GPS waypoint capture
-- fuel estimate
-- trip log
-- offline app-shell caching
+- Current target species
+- All species
 
-## Update the GitHub Pages site
+Existing V2/V3 waypoints are preserved and treated as "All Species" so upgrading does not make them disappear.
 
-If V2 is already deployed:
+## Preset map points
 
-1. Test V3 locally using Live Server.
-2. Replace these files in the existing GitHub repository:
+Preset colored points are broad strategy-area centers, NOT navigation waypoints.
+They move/change when you choose another species.
+
+Do not use them as:
+- a safe route
+- a channel marker
+- a reef-edge coordinate
+- an instruction to cross shallow water
+- an approach line to rocks or jetties
+
+Use current charts, your Garmin/chartplotter, seamanship and actual depth information for navigation.
+
+## Bait logic
+
+The initial profiles are intentionally practical rather than exhaustive:
+
+- Trout: shrimp/croaker/baitfish + plastics/topwaters
+- Redfish: shrimp/finger mullet/crab + spoons/plastics
+- Flounder: mud minnows/shrimp + slow bottom jigs
+- Sheepshead: crabs/shrimp tight to hard structure
+- Black drum: shrimp/crab/squid/cut bait on bottom
+- Spanish mackerel: baitfish + fast flashy metal/baitfish lures
+- General Inshore: live shrimp as the universal first option
+
+The app always links out to current TPWD regulations rather than treating cached size/bag limits as permanent.
+
+## Deploy
+
+If V3 is already on GitHub Pages:
+
+1. Test V4 locally with Live Server.
+2. Replace:
    - index.html
    - styles.css
    - app.js
    - sw.js
    - manifest.webmanifest
 3. README.md is optional.
-4. Commit the changes.
+4. Commit.
 5. Wait for GitHub Pages to redeploy.
-6. Fully close and reopen the phone web app/browser page if an older cached version appears.
+6. Close/reopen the phone app if the previous service-worker cache is still visible.
 
-The service-worker cache name is bumped to `galveston-fishing-v3`.
+Cache name: `galveston-fishing-v4`.
 
-## Day mode recommendation
+## Future expansion
 
-Leave Display set to `Auto: Day / Night`.
+Good V4.x additions would be:
 
-Use manual Day mode if:
-- you are in bright sun but Auto has not switched yet,
-- you want maximum contrast at the console,
-- or you are reviewing the app outdoors near sunrise/sunset.
-
-Use Night mode when:
-- running before sunrise,
-- avoiding glare at the helm,
-- or viewing indoors.
-
-## Safety
-
-A high fishing score means the fishing variables appear favorable under the app's simple heuristic.
-It does not mean the Gulf, bay, jetties, passes, or surf are safe to operate in.
-
-Always verify current:
-- marine forecast
-- warnings/advisories
-- lightning
-- seas / swell
-- visibility
-- currents
-- navigation hazards
-- fuel
-- Texas fishing regulations
+- official TPWD artificial-reef datasets / coordinates
+- import/export Garmin-compatible waypoint files where technically appropriate
+- species-specific seasonal behavior
+- bait-shop inventory / shopping checklist
+- catch-log analytics by species, tide, wind, bait and waypoint
+- automatic "what should we target today?" mode
