@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="night">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#07151f" />
-  <meta name="description" content="Phone-friendly Galveston fishing dashboard for tides, weather, fishing zones and on-water decisions." />
+  <meta name="description" content="Phone-friendly Galveston fishing dashboard for tides, weather, trip outlooks, fishing zones and on-water decisions." />
   <title>Galveston Fishing Dashboard</title>
 
   <link rel="manifest" href="manifest.webmanifest" />
@@ -19,15 +19,38 @@
     <div>
       <p class="eyebrow">TIDEWATER 272 CC</p>
       <h1>Galveston Fishing Dashboard</h1>
-      <p class="muted">Tide + wind + water clarity → fishing call</p>
+      <p class="muted">Live conditions → best window → starting strategy</p>
     </div>
-    <button id="refreshBtn" class="primary">Refresh Live Data</button>
+
+    <div class="header-actions">
+      <label class="theme-control">
+        Display
+        <select id="themeSelect" aria-label="Display theme">
+          <option value="auto" selected>Auto: Day / Night</option>
+          <option value="day">Day: High Contrast</option>
+          <option value="night">Night: Dark Marine</option>
+        </select>
+      </label>
+      <button id="refreshBtn" class="primary">Refresh Live Data</button>
+    </div>
   </header>
 
   <main>
     <section class="status-row">
       <span id="liveStatus" class="status-pill tone-water">Loading live data…</span>
+      <span id="themeStatus" class="status-pill tone-sky">Display: —</span>
       <span id="lastUpdated" class="muted small"></span>
+    </section>
+
+    <section id="alertPanel" class="card alert-card hidden" aria-live="polite">
+      <div class="card-heading">
+        <div>
+          <p class="eyebrow alert-eyebrow">NWS ALERT</p>
+          <h2 id="alertHeadline">Weather alert</h2>
+        </div>
+        <span id="alertSeverity" class="badge grade-caution">CHECK</span>
+      </div>
+      <p id="alertDetail" class="muted"></p>
     </section>
 
     <section class="grid two">
@@ -52,10 +75,38 @@
       </article>
     </section>
 
+    <section class="card outlook-card">
+      <div class="card-heading">
+        <div>
+          <p class="eyebrow accent-text">NEW IN V3</p>
+          <h2>Fishing Outlook</h2>
+        </div>
+        <span class="badge tone-green">7-DAY DATA</span>
+      </div>
+
+      <p class="muted">
+        These are fishing-opportunity scores, not boating-safety scores. The app compares projected wind,
+        tide movement, time around sunrise/sunset, your selected water clarity, and forecast wording.
+      </p>
+
+      <div id="outlookCards" class="outlook-cards">
+        <div class="outlook-skeleton">Building Today…</div>
+        <div class="outlook-skeleton">Building Tomorrow…</div>
+        <div class="outlook-skeleton">Building Weekend…</div>
+      </div>
+
+      <div class="score-legend">
+        <span><i class="score-dot score-excellent"></i>80–100 Strong</span>
+        <span><i class="score-dot score-good"></i>65–79 Good</span>
+        <span><i class="score-dot score-fair"></i>45–64 Conditional</span>
+        <span><i class="score-dot score-poor"></i>&lt;45 Weak</span>
+      </div>
+    </section>
+
     <section class="card call-card">
       <div class="card-heading">
         <div>
-          <p class="eyebrow accent-text">DECISION ENGINE</p>
+          <p class="eyebrow accent-text">RIGHT NOW</p>
           <h2>What I Would Do</h2>
         </div>
         <span id="callGrade" class="badge grade-waiting">WAITING</span>
@@ -107,7 +158,7 @@
     <section class="card map-card">
       <div class="card-heading">
         <div>
-          <p class="eyebrow accent-text">NEW IN V2</p>
+          <p class="eyebrow accent-text">STRATEGY MAP</p>
           <h2>Fishing Zones & Waypoints</h2>
         </div>
         <span class="badge tone-green">MAP</span>
@@ -249,9 +300,14 @@
 
     <section class="card warning">
       <h2>Safety & Regulations</h2>
-      <p>This dashboard is a planning aid, not a navigation or safety system. Always verify the current marine forecast, lightning, sea state, navigation hazards, fuel, and current Texas fishing regulations before leaving the dock.</p>
+      <p>
+        This dashboard is a planning aid, not a navigation or safety system. A high fishing score does not mean
+        conditions are safe. Always verify the current marine forecast, watches/warnings, lightning, sea state,
+        navigation hazards, fuel, and current Texas fishing regulations before leaving the dock.
+      </p>
       <div class="link-row">
         <a href="https://www.weather.gov/hgx/" target="_blank" rel="noreferrer">NWS Houston/Galveston</a>
+        <a href="https://www.weather.gov/marine/" target="_blank" rel="noreferrer">NWS Marine Forecasts</a>
         <a href="https://tidesandcurrents.noaa.gov/stationhome.html?id=8771450" target="_blank" rel="noreferrer">NOAA Pier 21</a>
         <a href="https://tpwd.texas.gov/regulations/outdoor-annual/fishing/" target="_blank" rel="noreferrer">TPWD Fishing Regulations</a>
         <a href="https://tpwd.texas.gov/gis/ris/artificialreefs/" target="_blank" rel="noreferrer">TPWD Reef Map</a>

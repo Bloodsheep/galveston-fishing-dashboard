@@ -3,7 +3,7 @@
   "short_name": "Fishing Dash",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#061018",
+  "background_color": "#eaf3f5",
   "theme_color": "#07151f",
-  "description": "Phone-friendly Galveston fishing conditions, strategy zones, waypoints and decision dashboard."
+  "description": "Phone-friendly Galveston fishing conditions, trip outlooks, strategy zones, waypoints and decision dashboard."
 }

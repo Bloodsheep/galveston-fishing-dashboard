@@ -1,61 +1,96 @@
-# Galveston Fishing Dashboard — V2
+# Galveston Fishing Dashboard — V3
 
-V2 keeps the original phone-first dashboard and adds restrained color plus a fishing-zone / waypoint map.
+V3 adds daylight readability and trip planning on top of V2.
 
-## V2 changes
+## Major V3 additions
 
-- Functional accent colors:
-  - aqua/blue = water, tide and weather information
-  - green = favorable / go
-  - amber = conditional / current / caution
-  - red = stronger caution
-  - purple = sonar / personal waypoint accents
-- Interactive Galveston-area map using Leaflet + OpenStreetMap.
-- Five broad fishing strategy zones.
-- The decision engine highlights the broad strategy-zone match for current conditions.
-- Save your own exact latitude/longitude waypoints in the browser.
-- "Use My Current Position" can populate a waypoint from your phone GPS.
-- Existing NOAA tide, NWS weather, fuel estimator and trip log remain.
+### Automatic day/night display
+Choose:
+- Auto: Day / Night
+- Day: High Contrast
+- Night: Dark Marine
 
-## Important map note
+Auto uses Galveston sunrise/sunset timing to switch the display. The daytime theme uses a bright,
+high-contrast marine palette intended to be easier to read outdoors. Your choice is saved in this browser.
 
-Preset strategy pins are approximate broad-area centers. They are NOT safe navigation waypoints,
-routes, channel markers or recommended boat approaches.
+### Fishing Outlook
+The dashboard now creates:
+- Today
+- Tomorrow
+- Weekend
 
-Your personal waypoints are saved only in the current browser's local storage. Verify coordinates
-before using them and use your Garmin/chartplotter and current nautical charts for navigation.
+Each card includes:
+- fishing-opportunity score from 0–100
+- best available 3-hour fishing window
+- projected wind
+- projected tide direction
+- sunrise and sunset
+- broad starting strategy zone
+- a few of the reasons affecting the score
+
+Scores use NOAA tide predictions, the NWS hourly forecast, selected water clarity, time relative to
+sunrise/sunset, and simple forecast-language penalties.
+
+IMPORTANT: the score is NOT a boating-safety score.
+
+### NWS alert awareness
+The app checks active NWS alerts for the Galveston coordinate and surfaces an alert banner when one exists.
+
+### Existing V2 features retained
+- Live NOAA tide predictions
+- NWS hourly weather
+- current fishing recommendation engine
+- interactive strategy map
+- personal saved waypoints
+- phone GPS waypoint capture
+- fuel estimate
+- trip log
+- offline app-shell caching
 
 ## Update the GitHub Pages site
 
-If V1 is already working:
+If V2 is already deployed:
 
-1. Unzip this folder.
-2. In your GitHub repository, replace:
+1. Test V3 locally using Live Server.
+2. Replace these files in the existing GitHub repository:
    - index.html
    - styles.css
    - app.js
    - sw.js
    - manifest.webmanifest
-3. Commit the changes.
-4. Wait for GitHub Pages to redeploy.
-5. On your phone, reload the page.
+3. README.md is optional.
+4. Commit the changes.
+5. Wait for GitHub Pages to redeploy.
+6. Fully close and reopen the phone web app/browser page if an older cached version appears.
 
-If the old visual design sticks around because of the service worker, close the installed web app/browser tab
-and open it again. The V2 service worker uses a new cache name.
+The service-worker cache name is bumped to `galveston-fishing-v3`.
 
-## Run locally
+## Day mode recommendation
 
-Open the folder in VS Code and use Live Server, exactly like V1.
+Leave Display set to `Auto: Day / Night`.
 
-## Network behavior
+Use manual Day mode if:
+- you are in bright sun but Auto has not switched yet,
+- you want maximum contrast at the console,
+- or you are reviewing the app outdoors near sunrise/sunset.
 
-The core app shell can be cached, but live NOAA/NWS data and map tiles require connectivity.
-The map itself loads Leaflet from a CDN.
+Use Night mode when:
+- running before sunrise,
+- avoiding glare at the helm,
+- or viewing indoors.
 
-## Next logical V3
+## Safety
 
-- Today / Tomorrow / Weekend planning
-- sunrise/sunset
-- marine forecast / wave conditions where appropriate
-- rank zones by the upcoming fishing window instead of only current conditions
-- export/import saved waypoints and trip logs
+A high fishing score means the fishing variables appear favorable under the app's simple heuristic.
+It does not mean the Gulf, bay, jetties, passes, or surf are safe to operate in.
+
+Always verify current:
+- marine forecast
+- warnings/advisories
+- lightning
+- seas / swell
+- visibility
+- currents
+- navigation hazards
+- fuel
+- Texas fishing regulations
