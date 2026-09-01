@@ -1,51 +1,61 @@
-# Galveston Fishing Dashboard
+# Galveston Fishing Dashboard — V2
 
-A phone-friendly fishing dashboard built with plain HTML, CSS, and JavaScript.
+V2 keeps the original phone-first dashboard and adds restrained color plus a fishing-zone / waypoint map.
 
-## What it does
+## V2 changes
 
-- Loads NOAA high/low tide predictions for Galveston Pier 21 (station 8771450).
-- Loads the NWS hourly forecast for Galveston.
-- Combines tide direction, wind, user-selected water clarity, and time of day into a simple fishing call.
-- Includes the Tidewater 272 CC quick reference and a rough fuel estimator.
-- Saves trip notes locally on the device.
-- Includes a service worker so the app shell can still open offline. Live NOAA/NWS data still requires internet access.
+- Functional accent colors:
+  - aqua/blue = water, tide and weather information
+  - green = favorable / go
+  - amber = conditional / current / caution
+  - red = stronger caution
+  - purple = sonar / personal waypoint accents
+- Interactive Galveston-area map using Leaflet + OpenStreetMap.
+- Five broad fishing strategy zones.
+- The decision engine highlights the broad strategy-zone match for current conditions.
+- Save your own exact latitude/longitude waypoints in the browser.
+- "Use My Current Position" can populate a waypoint from your phone GPS.
+- Existing NOAA tide, NWS weather, fuel estimator and trip log remain.
 
-## Run it locally
+## Important map note
 
-The simplest method is VS Code + the Live Server extension.
+Preset strategy pins are approximate broad-area centers. They are NOT safe navigation waypoints,
+routes, channel markers or recommended boat approaches.
 
-1. Open this folder in VS Code.
-2. Install the "Live Server" extension.
-3. Right-click `index.html`.
-4. Choose "Open with Live Server".
+Your personal waypoints are saved only in the current browser's local storage. Verify coordinates
+before using them and use your Garmin/chartplotter and current nautical charts for navigation.
 
-You can also use Python if it is installed:
+## Update the GitHub Pages site
 
-    python -m http.server 8000
+If V1 is already working:
 
-Then visit:
+1. Unzip this folder.
+2. In your GitHub repository, replace:
+   - index.html
+   - styles.css
+   - app.js
+   - sw.js
+   - manifest.webmanifest
+3. Commit the changes.
+4. Wait for GitHub Pages to redeploy.
+5. On your phone, reload the page.
 
-    http://localhost:8000
+If the old visual design sticks around because of the service worker, close the installed web app/browser tab
+and open it again. The V2 service worker uses a new cache name.
 
-## Publish with GitHub Pages
+## Run locally
 
-1. Create a GitHub repository named `galveston-fishing-dashboard`.
-2. Upload all files in this folder to the repository root.
-3. In the repo open Settings > Pages.
-4. Under Build and deployment choose `Deploy from a branch`.
-5. Select branch `main` and folder `/(root)`.
-6. Save.
-7. GitHub will provide the public Pages URL when deployment finishes.
+Open the folder in VS Code and use Live Server, exactly like V1.
 
-## Main files
+## Network behavior
 
-- `index.html` - page structure
-- `styles.css` - phone-first design
-- `app.js` - NOAA/NWS requests and fishing recommendation logic
-- `manifest.webmanifest` - installable-web-app metadata
-- `sw.js` - offline app-shell caching
+The core app shell can be cached, but live NOAA/NWS data and map tiles require connectivity.
+The map itself loads Leaflet from a CDN.
 
-## Important
+## Next logical V3
 
-This is a fishing planning aid, not a marine navigation or safety system. Verify marine weather, lightning, sea state, hazards, fuel, and current regulations before each trip.
+- Today / Tomorrow / Weekend planning
+- sunrise/sunset
+- marine forecast / wave conditions where appropriate
+- rank zones by the upcoming fishing window instead of only current conditions
+- export/import saved waypoints and trip logs

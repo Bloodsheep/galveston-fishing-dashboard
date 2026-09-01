@@ -3,13 +3,18 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#0b1720" />
-  <meta name="description" content="Phone-friendly Galveston fishing dashboard for tides, weather and on-water decisions." />
+  <meta name="theme-color" content="#07151f" />
+  <meta name="description" content="Phone-friendly Galveston fishing dashboard for tides, weather, fishing zones and on-water decisions." />
   <title>Galveston Fishing Dashboard</title>
+
   <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="styles.css" />
 </head>
+
 <body>
+  <div class="accent-bar" aria-hidden="true"></div>
+
   <header class="topbar">
     <div>
       <p class="eyebrow">TIDEWATER 272 CC</p>
@@ -21,27 +26,27 @@
 
   <main>
     <section class="status-row">
-      <span id="liveStatus" class="status-pill">Loading live data…</span>
+      <span id="liveStatus" class="status-pill tone-water">Loading live data…</span>
       <span id="lastUpdated" class="muted small"></span>
     </section>
 
     <section class="grid two">
-      <article class="card">
+      <article class="card tide-card">
         <div class="card-heading">
           <h2>Tide</h2>
-          <span class="badge">NOAA</span>
+          <span class="badge tone-water">NOAA</span>
         </div>
-        <div id="tideState" class="hero-value">—</div>
+        <div id="tideState" class="hero-value water-text">—</div>
         <p id="nextTide" class="muted">Loading Pier 21 tide predictions…</p>
         <div id="tideEvents" class="mini-list"></div>
       </article>
 
-      <article class="card">
+      <article class="card wind-card">
         <div class="card-heading">
           <h2>Wind & Forecast</h2>
-          <span class="badge">NWS</span>
+          <span class="badge tone-sky">NWS</span>
         </div>
-        <div id="windNow" class="hero-value">—</div>
+        <div id="windNow" class="hero-value sky-text">—</div>
         <p id="weatherNow" class="muted">Loading Galveston forecast…</p>
         <div id="forecastStrip" class="forecast-strip"></div>
       </article>
@@ -49,8 +54,11 @@
 
     <section class="card call-card">
       <div class="card-heading">
-        <h2>What I Would Do</h2>
-        <span id="callGrade" class="badge">WAITING</span>
+        <div>
+          <p class="eyebrow accent-text">DECISION ENGINE</p>
+          <h2>What I Would Do</h2>
+        </div>
+        <span id="callGrade" class="badge grade-waiting">WAITING</span>
       </div>
 
       <div class="controls">
@@ -75,19 +83,19 @@
       </div>
 
       <div class="recommendation-grid">
-        <div>
+        <div class="rec-zone">
           <span class="label">Primary zone</span>
           <strong id="zoneCall">—</strong>
         </div>
-        <div>
+        <div class="rec-presentation">
           <span class="label">Presentation</span>
           <strong id="presentationCall">—</strong>
         </div>
-        <div>
+        <div class="rec-boat">
           <span class="label">Boat position</span>
           <strong id="boatCall">—</strong>
         </div>
-        <div>
+        <div class="rec-sonar">
           <span class="label">Garmin / sonar</span>
           <strong id="sonarCall">—</strong>
         </div>
@@ -96,8 +104,86 @@
       <div id="reasoning" class="reason-box">Live data is loading.</div>
     </section>
 
+    <section class="card map-card">
+      <div class="card-heading">
+        <div>
+          <p class="eyebrow accent-text">NEW IN V2</p>
+          <h2>Fishing Zones & Waypoints</h2>
+        </div>
+        <span class="badge tone-green">MAP</span>
+      </div>
+
+      <p class="muted">
+        Colored preset pins are broad strategy areas only. Your saved pins can be exact Garmin/GPS waypoints.
+        Never use a preset pin as a navigation route or safe approach line.
+      </p>
+
+      <div id="recommendedZoneBanner" class="zone-banner">
+        Refresh conditions to highlight the best matching strategy zone.
+      </div>
+
+      <div id="zoneMap" class="zone-map" aria-label="Galveston fishing strategy map"></div>
+
+      <div class="zone-legend" aria-label="Map legend">
+        <span><i class="dot dot-water"></i>Bay / reef</span>
+        <span><i class="dot dot-amber"></i>Pass / current</span>
+        <span><i class="dot dot-green"></i>Protected / structure</span>
+        <span><i class="dot dot-user"></i>Your waypoint</span>
+      </div>
+
+      <div id="zoneCards" class="zone-cards"></div>
+
+      <details class="waypoint-panel">
+        <summary>Add one of your own waypoints</summary>
+
+        <div class="controls waypoint-controls">
+          <label>
+            Name
+            <input id="wpName" placeholder="e.g. Dad's reef edge" />
+          </label>
+
+          <label>
+            Type
+            <select id="wpType">
+              <option value="reef">Reef / shell</option>
+              <option value="drain">Drain / current seam</option>
+              <option value="birds">Bird-school area</option>
+              <option value="jetty">Jetty / rocks</option>
+              <option value="other">Other</option>
+            </select>
+          </label>
+
+          <label>
+            Latitude
+            <input id="wpLat" type="number" inputmode="decimal" step="any" placeholder="29.000000" />
+          </label>
+
+          <label>
+            Longitude
+            <input id="wpLon" type="number" inputmode="decimal" step="any" placeholder="-94.000000" />
+          </label>
+        </div>
+
+        <label>
+          Notes
+          <textarea id="wpNotes" rows="2" placeholder="Depth, shell edge, tide, lure, approach direction…"></textarea>
+        </label>
+
+        <div class="button-row">
+          <button id="useLocationBtn" class="ghost">Use My Current Position</button>
+          <button id="saveWaypointBtn" class="primary">Save Waypoint</button>
+        </div>
+
+        <p class="muted small">
+          Waypoints are stored only in this browser on this device for now. Verify coordinates before relying on them.
+        </p>
+      </details>
+
+      <div id="waypointList" class="waypoint-list"></div>
+    </section>
+
     <section class="grid two">
-      <article class="card">
+      <article class="card sequence-card">
         <h2>On-Water Sequence</h2>
         <ol class="compact-list">
           <li><strong>Safety first.</strong> Forecast, lightning, visibility, fuel, PFDs, kill switch, VHF/phone.</li>
@@ -109,7 +195,7 @@
         </ol>
       </article>
 
-      <article class="card">
+      <article class="card boat-card">
         <h2>Boat Quick Reference</h2>
         <div class="spec-grid">
           <span>Boat</span><strong>Tidewater 272 CC</strong>
@@ -138,7 +224,7 @@
       </article>
     </section>
 
-    <section class="card">
+    <section class="card log-card">
       <div class="card-heading">
         <h2>Quick Trip Log</h2>
         <button id="clearLogBtn" class="ghost">Clear</button>
@@ -168,6 +254,7 @@
         <a href="https://www.weather.gov/hgx/" target="_blank" rel="noreferrer">NWS Houston/Galveston</a>
         <a href="https://tidesandcurrents.noaa.gov/stationhome.html?id=8771450" target="_blank" rel="noreferrer">NOAA Pier 21</a>
         <a href="https://tpwd.texas.gov/regulations/outdoor-annual/fishing/" target="_blank" rel="noreferrer">TPWD Fishing Regulations</a>
+        <a href="https://tpwd.texas.gov/gis/ris/artificialreefs/" target="_blank" rel="noreferrer">TPWD Reef Map</a>
       </div>
     </section>
   </main>
@@ -176,6 +263,7 @@
     <p>Built for fast phone use on the water. NOAA station 8771450 • Galveston Pier 21.</p>
   </footer>
 
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

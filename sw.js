@@ -1,5 +1,11 @@
-const CACHE = "galveston-fishing-v1";
-const ASSETS = ["./", "./index.html", "./styles.css", "./app.js", "./manifest.webmanifest"];
+const CACHE = "galveston-fishing-v2";
+const ASSETS = [
+  "./",
+  "./index.html",
+  "./styles.css",
+  "./app.js",
+  "./manifest.webmanifest"
+];
 
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)));
@@ -8,7 +14,9 @@ self.addEventListener("install", event => {
 
 self.addEventListener("activate", event => {
   event.waitUntil(
-    caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+    caches.keys().then(keys =>
+      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+    )
   );
   self.clients.claim();
 });
@@ -16,15 +24,15 @@ self.addEventListener("activate", event => {
 self.addEventListener("fetch", event => {
   if (event.request.method !== "GET") return;
 
-  // Keep NOAA/NWS data network-first.
-  if (event.request.url.includes("api.weather.gov") ||
-      event.request.url.includes("api.tidesandcurrents.noaa.gov")) {
-    event.respondWith(fetch(event.request).catch(() =>
-      new Response(JSON.stringify({error:"offline"}), {
-        headers: {"Content-Type":"application/json"},
-        status: 503
-      })
-    ));
+  const url = event.request.url;
+
+  if (
+    url.includes("api.weather.gov") ||
+    url.includes("api.tidesandcurrents.noaa.gov") ||
+    url.includes("tile.openstreetmap.org") ||
+    url.includes("unpkg.com")
+  ) {
+    event.respondWith(fetch(event.request).catch(() => caches.match(event.request)));
     return;
   }
 

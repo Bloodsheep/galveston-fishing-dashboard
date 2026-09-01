@@ -4,13 +4,70 @@ const GALVESTON = {
   tideStation: "8771450"
 };
 
+const STRATEGY_ZONES = [
+  {
+    key: "east-bay",
+    name: "East Bay Shell / Reef Country",
+    lat: 29.49,
+    lon: -94.67,
+    tone: "water",
+    tags: ["reef", "shell", "incoming", "midbay"],
+    summary: "Broad shell/reef search area. Look for bait, harder bottom and repeatable contour changes.",
+    tactic: "Controlled drift across productive contour; mark every bite and repeat outside the school."
+  },
+  {
+    key: "jetties",
+    name: "Galveston Jetties / Bay Entrance",
+    lat: 29.35,
+    lon: -94.71,
+    tone: "amber",
+    tags: ["pass", "entrance", "incoming", "current", "jetty"],
+    summary: "Strong current influence and Gulf-water exchange. Sea state and ship traffic matter.",
+    tactic: "Work current seams from a safe holding position; never let position-hold replace seamanship."
+  },
+  {
+    key: "lower-bay",
+    name: "Lower Bay / Texas City Side",
+    lat: 29.38,
+    lon: -94.86,
+    tone: "green",
+    tags: ["protected", "structure", "wind", "lowerbay"],
+    summary: "Useful broad option when structure, current and a more manageable lee line up.",
+    tactic: "Use wind to make short repeatable drifts and scan structure before committing."
+  },
+  {
+    key: "west-bay",
+    name: "West Bay / Drains & Shorelines",
+    lat: 29.20,
+    lon: -95.02,
+    tone: "green",
+    tags: ["drain", "outgoing", "shoreline", "protected"],
+    summary: "Broad drain/shoreline strategy area, especially when bait is being pulled from backwater.",
+    tactic: "Sit outside the current tongue; cast upcurrent so the lure or bait exits naturally."
+  },
+  {
+    key: "beachfront",
+    name: "Galveston Beachfront / Surf",
+    lat: 29.25,
+    lon: -94.82,
+    tone: "water",
+    tags: ["surf", "green", "calm", "incoming"],
+    summary: "A clean-water option only when wind, swell, visibility and breaker conditions allow.",
+    tactic: "Work guts/bars parallel to the beach; stay outside unsafe breakers and keep the bow controlled."
+  }
+];
+
 const state = {
   tides: [],
   tideDirection: "Unknown",
   nextTide: null,
   windMph: null,
   windDirection: "",
-  forecast: []
+  forecast: [],
+  recommendedZoneKey: null,
+  map: null,
+  zoneMarkers: new Map(),
+  userMarkers: []
 };
 
 const $ = (id) => document.getElementById(id);
@@ -23,7 +80,6 @@ function yyyymmdd(date) {
 }
 
 function parseNoaaLocal(value) {
-  // NOAA lst_ldt values arrive as YYYY-MM-DD HH:mm
   return new Date(value.replace(" ", "T"));
 }
 
@@ -35,9 +91,30 @@ function fmtTime(date) {
 }
 
 function escapeHtml(value="") {
-  return value.replace(/[&<>"']/g, (m) => ({
+  return String(value).replace(/[&<>"']/g, (m) => ({
     "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;"
   }[m]));
+}
+
+function getCss(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
+function markerColor(tone) {
+  if (tone === "amber") return getCss("--amber") || "#f0ba57";
+  if (tone === "green") return getCss("--green") || "#64d38b";
+  if (tone === "user") return getCss("--purple") || "#b59aff";
+  return getCss("--water") || "#36c5d8";
+}
+
+function makeCircleMarker(lat, lon, tone, radius=8) {
+  return L.circleMarker([lat, lon], {
+    radius,
+    weight: 2,
+    color: markerColor(tone),
+    fillColor: markerColor(tone),
+    fillOpacity: .72
+  });
 }
 
 async function fetchTides() {
@@ -70,7 +147,6 @@ async function fetchTides() {
     type: p.type
   }));
 
-  const previous = [...predictions].reverse().find(p => p.time <= now);
   const next = predictions.find(p => p.time > now);
 
   state.tides = predictions;
@@ -79,6 +155,8 @@ async function fetchTides() {
                         next?.type === "L" ? "Outgoing" : "Unknown";
 
   $("tideState").textContent = state.tideDirection;
+  $("tideState").classList.toggle("amber-text", state.tideDirection === "Outgoing");
+
   $("nextTide").textContent = next
     ? `Next ${next.type === "H" ? "high" : "low"}: ${fmtTime(next.time)} • ${next.height.toFixed(2)} ft MLLW`
     : "No upcoming tide event found.";
@@ -95,8 +173,7 @@ async function fetchTides() {
 function parseWindMph(text="") {
   const nums = text.match(/\d+/g);
   if (!nums?.length) return null;
-  const values = nums.map(Number);
-  return Math.max(...values);
+  return Math.max(...nums.map(Number));
 }
 
 async function fetchWeather() {
@@ -104,6 +181,7 @@ async function fetchWeather() {
     `https://api.weather.gov/points/${GALVESTON.lat},${GALVESTON.lon}`,
     { headers: { "Accept": "application/geo+json" } }
   );
+
   if (!pointResponse.ok) throw new Error("NWS point request failed.");
   const point = await pointResponse.json();
 
@@ -113,6 +191,7 @@ async function fetchWeather() {
   const forecastResponse = await fetch(hourlyUrl, {
     headers: { "Accept": "application/geo+json" }
   });
+
   if (!forecastResponse.ok) throw new Error("NWS forecast request failed.");
   const forecast = await forecastResponse.json();
 
@@ -138,6 +217,31 @@ async function fetchWeather() {
       </div>
     `;
   }).join("");
+}
+
+function chooseStrategyZone({ tide, clarity, wind, time }) {
+  if (wind !== null && wind >= 20) return "lower-bay";
+  if (wind !== null && wind >= 15) return "lower-bay";
+
+  if (clarity === "green" && (wind === null || wind <= 10) && (time === "pre" || time === "morning")) {
+    return "beachfront";
+  }
+
+  if (tide === "Outgoing") return "west-bay";
+  if (tide === "Incoming") return clarity === "green" ? "jetties" : "east-bay";
+
+  return "east-bay";
+}
+
+function setGradeStyle(grade) {
+  const gradeEl = $("callGrade");
+  gradeEl.classList.remove("grade-waiting", "grade-go", "grade-conditional", "grade-caution");
+  gradeEl.classList.add(
+    grade === "GO" ? "grade-go" :
+    grade === "CONDITIONAL" ? "grade-conditional" :
+    grade === "CAUTION" ? "grade-caution" :
+    "grade-waiting"
+  );
 }
 
 function buildFishingCall() {
@@ -185,7 +289,9 @@ function buildFishingCall() {
   }
 
   if (clarity === "green") {
-    if (wind !== null && wind <= 12) zone = tide === "Outgoing" ? zone : "Surf / reefs / flats with bait and moving water";
+    if (wind !== null && wind <= 12) {
+      zone = tide === "Outgoing" ? zone : "Surf / reefs / flats with bait and moving water";
+    }
     presentation = (time === "pre" || time === "morning")
       ? "Topwater first; then natural 1/8 oz plastic"
       : "Natural soft plastic; live shrimp/croaker where appropriate";
@@ -202,10 +308,14 @@ function buildFishingCall() {
   }
 
   if (time === "pre") {
-    presentation = clarity === "muddy" ? presentation : "Topwater first; then 1/8 oz plastic or live bait";
+    presentation = clarity === "muddy"
+      ? presentation
+      : "Topwater first; then 1/8 oz plastic or live bait";
     reasons.push("Pre-sunrise: start shallow/active and let topwater cover water.");
   } else if (time === "midday") {
-    if (wind === null || wind < 20) zone += " • favor deeper shell/channel structure after the early bite";
+    if (wind === null || wind < 20) {
+      zone += " • favor deeper shell/channel structure after the early bite";
+    }
     reasons.push("Midday in warm-season conditions: be ready to slide deeper.");
   }
 
@@ -217,7 +327,10 @@ function buildFishingCall() {
     sonar = "Use live/forward sonar only where sea state is safe; follow bait along guts/bars";
   }
 
+  state.recommendedZoneKey = chooseStrategyZone({ tide, clarity, wind, time });
+
   $("callGrade").textContent = grade;
+  setGradeStyle(grade);
   $("zoneCall").textContent = zone;
   $("presentationCall").textContent = presentation;
   $("boatCall").textContent = boat;
@@ -225,6 +338,8 @@ function buildFishingCall() {
   $("reasoning").textContent = reasons.length
     ? reasons.join(" ")
     : "Set water clarity and time window, then refresh the live tide and weather data.";
+
+  updateRecommendedZone();
 }
 
 function updateFuel() {
@@ -232,12 +347,14 @@ function updateFuel() {
   const mpg = Number($("mpgSelect").value || 3);
   const base = mpg > 0 ? miles / mpg : 0;
   const with20 = base * 1.2;
+
   $("fuelEstimate").textContent =
     `${base.toFixed(1)} gal estimated burn • ${with20.toFixed(1)} gal with a simple 20% planning buffer`;
 }
 
 function loadLog() {
   const entries = JSON.parse(localStorage.getItem("galvestonTripLog") || "[]");
+
   $("tripLog").innerHTML = entries.map(entry => `
     <div class="trip-item">
       <strong>${escapeHtml(entry.spot || "Trip note")}</strong>
@@ -250,35 +367,266 @@ function loadLog() {
 
 function saveLog() {
   const entries = JSON.parse(localStorage.getItem("galvestonTripLog") || "[]");
+
   entries.unshift({
     date: new Date().toLocaleString(),
     spot: $("logSpot").value.trim(),
     result: $("logResult").value.trim(),
     notes: $("logNotes").value.trim()
   });
+
   localStorage.setItem("galvestonTripLog", JSON.stringify(entries.slice(0, 50)));
+
   $("logSpot").value = "";
   $("logResult").value = "";
   $("logNotes").value = "";
+
   loadLog();
+}
+
+function initMap() {
+  if (typeof L === "undefined") {
+    $("zoneMap").innerHTML = `<div class="reason-box">Map library could not load. The rest of the fishing dashboard still works.</div>`;
+    return;
+  }
+
+  state.map = L.map("zoneMap", {
+    zoomControl: true,
+    scrollWheelZoom: false
+  }).setView([29.34, -94.83], 9);
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 18,
+    attribution: "&copy; OpenStreetMap contributors"
+  }).addTo(state.map);
+
+  STRATEGY_ZONES.forEach(zone => {
+    const marker = makeCircleMarker(zone.lat, zone.lon, zone.tone, 8)
+      .addTo(state.map)
+      .bindPopup(`
+        <strong>${escapeHtml(zone.name)}</strong>
+        <p>${escapeHtml(zone.summary)}</p>
+        <small>Approximate strategy-zone center — not a navigation waypoint.</small>
+      `);
+
+    marker.on("click", () => focusZone(zone.key));
+    state.zoneMarkers.set(zone.key, marker);
+  });
+
+  renderZoneCards();
+  renderUserWaypoints();
+}
+
+function renderZoneCards() {
+  $("zoneCards").innerHTML = STRATEGY_ZONES.map(zone => `
+    <button class="zone-card ${zone.key === state.recommendedZoneKey ? "recommended" : ""}"
+            data-zone-key="${escapeHtml(zone.key)}"
+            type="button">
+      <strong>${escapeHtml(zone.name)}</strong>
+      <p>${escapeHtml(zone.summary)}</p>
+      <span class="zone-tag">${escapeHtml(zone.tone === "amber" ? "CURRENT" : zone.tone === "green" ? "STRUCTURE" : "WATER")}</span>
+    </button>
+  `).join("");
+
+  document.querySelectorAll(".zone-card").forEach(card => {
+    card.addEventListener("click", () => focusZone(card.dataset.zoneKey));
+  });
+}
+
+function updateRecommendedZone() {
+  renderZoneCards();
+
+  const zone = STRATEGY_ZONES.find(z => z.key === state.recommendedZoneKey);
+  if (!zone) return;
+
+  $("recommendedZoneBanner").innerHTML =
+    `<strong>Best strategy-zone match right now:</strong> ${escapeHtml(zone.name)} — ${escapeHtml(zone.tactic)}`;
+
+  state.zoneMarkers.forEach((marker, key) => {
+    const selected = key === state.recommendedZoneKey;
+    marker.setStyle({
+      radius: selected ? 11 : 8,
+      weight: selected ? 4 : 2,
+      fillOpacity: selected ? .9 : .72
+    });
+  });
+}
+
+function focusZone(key) {
+  const zone = STRATEGY_ZONES.find(z => z.key === key);
+  if (!zone || !state.map) return;
+
+  state.map.flyTo([zone.lat, zone.lon], 11, { duration: .7 });
+  const marker = state.zoneMarkers.get(key);
+  if (marker) marker.openPopup();
+}
+
+function getWaypoints() {
+  try {
+    return JSON.parse(localStorage.getItem("galvestonWaypoints") || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function saveWaypoint() {
+  const name = $("wpName").value.trim();
+  const type = $("wpType").value;
+  const lat = Number($("wpLat").value);
+  const lon = Number($("wpLon").value);
+  const notes = $("wpNotes").value.trim();
+
+  if (!name) {
+    alert("Give the waypoint a name first.");
+    return;
+  }
+
+  if (!Number.isFinite(lat) || lat < -90 || lat > 90 ||
+      !Number.isFinite(lon) || lon < -180 || lon > 180) {
+    alert("Enter a valid latitude and longitude.");
+    return;
+  }
+
+  const waypoints = getWaypoints();
+  waypoints.unshift({
+    id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+    name,
+    type,
+    lat,
+    lon,
+    notes,
+    created: new Date().toLocaleString()
+  });
+
+  localStorage.setItem("galvestonWaypoints", JSON.stringify(waypoints.slice(0, 100)));
+
+  $("wpName").value = "";
+  $("wpLat").value = "";
+  $("wpLon").value = "";
+  $("wpNotes").value = "";
+
+  renderUserWaypoints();
+
+  if (state.map) {
+    state.map.flyTo([lat, lon], 12, { duration: .7 });
+  }
+}
+
+function deleteWaypoint(id) {
+  const waypoints = getWaypoints().filter(wp => wp.id !== id);
+  localStorage.setItem("galvestonWaypoints", JSON.stringify(waypoints));
+  renderUserWaypoints();
+}
+
+function renderUserWaypoints() {
+  state.userMarkers.forEach(marker => {
+    if (state.map) state.map.removeLayer(marker);
+  });
+  state.userMarkers = [];
+
+  const waypoints = getWaypoints();
+
+  $("waypointList").innerHTML = waypoints.length
+    ? waypoints.map(wp => `
+      <div class="waypoint-item">
+        <div>
+          <strong>${escapeHtml(wp.name)}</strong>
+          <div class="waypoint-meta">
+            <span>${escapeHtml(wp.type)}</span>
+            <span>${Number(wp.lat).toFixed(5)}, ${Number(wp.lon).toFixed(5)}</span>
+          </div>
+          ${wp.notes ? `<p class="muted small">${escapeHtml(wp.notes)}</p>` : ""}
+        </div>
+        <button class="danger" data-delete-wp="${escapeHtml(wp.id)}" type="button">Delete</button>
+      </div>
+    `).join("")
+    : `<p class="muted small">No personal waypoints saved on this device yet.</p>`;
+
+  document.querySelectorAll("[data-delete-wp]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      if (confirm("Delete this saved waypoint?")) {
+        deleteWaypoint(btn.dataset.deleteWp);
+      }
+    });
+  });
+
+  if (!state.map || typeof L === "undefined") return;
+
+  waypoints.forEach(wp => {
+    const marker = makeCircleMarker(wp.lat, wp.lon, "user", 7)
+      .addTo(state.map)
+      .bindPopup(`
+        <strong>${escapeHtml(wp.name)}</strong>
+        <p>${escapeHtml(wp.notes || wp.type)}</p>
+        <small>${Number(wp.lat).toFixed(5)}, ${Number(wp.lon).toFixed(5)}</small>
+      `);
+
+    state.userMarkers.push(marker);
+  });
+}
+
+function useCurrentPosition() {
+  if (!navigator.geolocation) {
+    alert("This browser does not expose geolocation.");
+    return;
+  }
+
+  const btn = $("useLocationBtn");
+  const original = btn.textContent;
+  btn.textContent = "Getting position…";
+  btn.disabled = true;
+
+  navigator.geolocation.getCurrentPosition(
+    position => {
+      $("wpLat").value = position.coords.latitude.toFixed(6);
+      $("wpLon").value = position.coords.longitude.toFixed(6);
+
+      btn.textContent = original;
+      btn.disabled = false;
+
+      if (state.map) {
+        state.map.flyTo(
+          [position.coords.latitude, position.coords.longitude],
+          13,
+          { duration: .7 }
+        );
+      }
+    },
+    error => {
+      btn.textContent = original;
+      btn.disabled = false;
+      alert(`Could not get current position: ${error.message}`);
+    },
+    {
+      enableHighAccuracy: true,
+      timeout: 12000,
+      maximumAge: 15000
+    }
+  );
 }
 
 async function refreshLive() {
   $("liveStatus").textContent = "Refreshing live data…";
+
   const results = await Promise.allSettled([fetchTides(), fetchWeather()]);
   const failed = results.filter(r => r.status === "rejected");
 
   if (failed.length === 0) {
     $("liveStatus").textContent = "Live NOAA/NWS data loaded";
+    $("liveStatus").className = "status-pill tone-green";
   } else if (failed.length === 1) {
     $("liveStatus").textContent = "Partial live data loaded";
+    $("liveStatus").className = "status-pill tone-water";
     console.warn(failed[0].reason);
   } else {
     $("liveStatus").textContent = "Live data unavailable — manual inputs still work";
+    $("liveStatus").className = "status-pill grade-conditional";
     failed.forEach(f => console.warn(f.reason));
   }
 
-  $("lastUpdated").textContent = `Updated ${new Date().toLocaleTimeString([], {hour:"numeric", minute:"2-digit"})}`;
+  $("lastUpdated").textContent =
+    `Updated ${new Date().toLocaleTimeString([], {hour:"numeric", minute:"2-digit"})}`;
+
   buildFishingCall();
 }
 
@@ -288,6 +636,9 @@ $("timeSelect").addEventListener("change", buildFishingCall);
 $("tripMiles").addEventListener("input", updateFuel);
 $("mpgSelect").addEventListener("change", updateFuel);
 $("saveLogBtn").addEventListener("click", saveLog);
+$("saveWaypointBtn").addEventListener("click", saveWaypoint);
+$("useLocationBtn").addEventListener("click", useCurrentPosition);
+
 $("clearLogBtn").addEventListener("click", () => {
   if (confirm("Clear all saved trip notes on this device?")) {
     localStorage.removeItem("galvestonTripLog");
@@ -296,9 +647,12 @@ $("clearLogBtn").addEventListener("click", () => {
 });
 
 if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(console.warn));
+  window.addEventListener("load", () =>
+    navigator.serviceWorker.register("./sw.js").catch(console.warn)
+  );
 }
 
 loadLog();
 updateFuel();
+initMap();
 refreshLive();
